@@ -1,1 +1,1 @@
-# go-exchange-metrics
+# go-exchange-trades
