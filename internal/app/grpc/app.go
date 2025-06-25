@@ -2,6 +2,8 @@ package grpc
 
 import (
 	"fmt"
+	"github.com/Phanile/go-exchange-trades/internal/config"
+	grpcTrades "github.com/Phanile/go-exchange-trades/internal/grpc/trades"
 	"google.golang.org/grpc"
 	"log/slog"
 	"net"
@@ -10,17 +12,17 @@ import (
 type App struct {
 	log        *slog.Logger
 	gRPCServer *grpc.Server
-	port       uint
+	port       int
 }
 
-func NewGRPCApp(port uint, log *slog.Logger) *App {
+func NewGRPCApp(log *slog.Logger, config *config.GRPCConfig, tradesService grpcTrades.Trades) *App {
 	gRPCServer := grpc.NewServer()
-	// TODO: register gRPCServer.Register()
+	grpcTrades.Register(gRPCServer, tradesService)
 
 	return &App{
 		log:        log,
 		gRPCServer: gRPCServer,
-		port:       port,
+		port:       config.Port,
 	}
 }
 
@@ -35,7 +37,7 @@ func (app *App) Run() error {
 
 	app.log.With(
 		slog.String("op", op),
-		slog.Int("port", int(app.port)),
+		slog.Int("port", app.port),
 	)
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", app.port))

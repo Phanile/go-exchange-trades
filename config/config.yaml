@@ -1,0 +1,10 @@
+env: "local"
+grpc:
+  port: 5711
+  timeout: 10s
+kafka:
+  port: 9092
+  timeout: 10s
+  topics:
+    - orders
+  workers_count: 3
