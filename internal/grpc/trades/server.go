@@ -16,8 +16,8 @@ type ServerAPI struct {
 	trades Trades
 }
 
-func Register(s *grpc.Server, trades Trades) {
-	tradev1.RegisterTradeServer(s, &ServerAPI{
+func Register(server *grpc.Server, trades Trades) {
+	tradev1.RegisterTradeServer(server, &ServerAPI{
 		trades: trades,
 	})
 }

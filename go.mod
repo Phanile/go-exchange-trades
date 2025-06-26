@@ -3,18 +3,27 @@ module github.com/Phanile/go-exchange-trades
 go 1.23.5
 
 require (
+	github.com/Phanile/go-exchange-protos v0.0.6
 	github.com/confluentinc/confluent-kafka-go/v2 v2.10.1
+	github.com/ilyakaznacheev/cleanenv v1.5.0
+	github.com/joho/godotenv v1.5.1
+	github.com/prometheus/client_golang v1.17.0
 	github.com/stretchr/testify v1.10.0
 	google.golang.org/grpc v1.73.0
 )
 
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
-	github.com/Phanile/go-exchange-protos v0.0.6 // indirect
+	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/ilyakaznacheev/cleanenv v1.5.0 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
+	github.com/kr/text v0.2.0 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/prometheus/client_model v0.5.0 // indirect
+	github.com/prometheus/common v0.44.0 // indirect
+	github.com/prometheus/procfs v0.12.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
