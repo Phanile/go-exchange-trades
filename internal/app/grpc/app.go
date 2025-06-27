@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Phanile/go-exchange-trades/internal/config"
 	grpcTrades "github.com/Phanile/go-exchange-trades/internal/grpc/trades"
+	"github.com/Phanile/go-exchange-trades/internal/middleware"
 	"google.golang.org/grpc"
 	"log/slog"
 	"net"
@@ -15,8 +16,11 @@ type App struct {
 	port       int
 }
 
-func NewGRPCApp(log *slog.Logger, config *config.GRPCConfig, tradesService grpcTrades.Trades) *App {
-	gRPCServer := grpc.NewServer()
+func NewGRPCApp(log *slog.Logger, config *config.GRPCConfig, tradesService grpcTrades.Trades, middleware *middleware.JWTMiddleware) *App {
+	gRPCServer := grpc.NewServer(
+		grpc.UnaryInterceptor(middleware.UnaryInterceptor()),
+	)
+
 	grpcTrades.Register(gRPCServer, tradesService)
 
 	return &App{
