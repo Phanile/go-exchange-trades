@@ -8,6 +8,11 @@ const (
 	SELL
 )
 
+const (
+	OrderTypeMarket OrderType = iota
+	OrderTypeLimit
+)
+
 type Order struct {
 	Id            int64
 	UserId        int64
@@ -18,4 +23,9 @@ type Order struct {
 	Amount        int64
 	Price         int64
 	Timestamp     int64
+}
+
+type OrderBookEntry struct {
+	Price  int64
+	Amount int64
 }
