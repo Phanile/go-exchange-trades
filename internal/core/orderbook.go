@@ -105,6 +105,8 @@ func (ob *OrderBook) CreateOrder(order *OrderItem) int64 {
 		return 0
 	}
 
+	ob.MatchOrder(order)
+
 	return id
 }
 
