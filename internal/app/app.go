@@ -17,6 +17,7 @@ import (
 type App struct {
 	GRPCApp  *grpc.App
 	KafkaApp *kafka.App
+	Storage  *storage.Storage
 }
 
 func NewApp(log *slog.Logger, kafkaConfig *config.KafkaConfig, gRPCConfig *config.GRPCConfig) *App {
@@ -28,20 +29,26 @@ func NewApp(log *slog.Logger, kafkaConfig *config.KafkaConfig, gRPCConfig *confi
 
 	runMigrations(postgres.Connection())
 
-	ob := core.NewOrderBook()
-	tradesService := trades.NewTradesService(log, ob, ob, ob)
 	jwtMiddleware := middleware.NewJWTMiddleware(os.Getenv("JWT_PUBLIC_KEY"))
 
-	gRPCApp := grpc.NewGRPCApp(log, gRPCConfig, tradesService, jwtMiddleware)
 	kafkaApp, errKafka := kafka.NewKafkaApp(log, kafkaConfig)
 
 	if errKafka != nil {
 		panic(errKafka)
 	}
 
+	producer := kafkaApp.GetProducer()
+
+	ob := core.NewOrderBook(producer, kafkaConfig)
+
+	tradesService := trades.NewTradesService(log, ob, ob, ob, producer)
+
+	gRPCApp := grpc.NewGRPCApp(log, gRPCConfig, tradesService, jwtMiddleware)
+
 	return &App{
 		GRPCApp:  gRPCApp,
 		KafkaApp: kafkaApp,
+		Storage:  postgres,
 	}
 }
 

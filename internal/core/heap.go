@@ -32,6 +32,14 @@ func (h *BidsHeap) Push(x any) {
 	*h = append(*h, item)
 }
 
+func (h BidsHeap) Peek() *OrderItem {
+	if len(h) == 0 {
+		return nil
+	}
+
+	return h[0]
+}
+
 func (h AsksHeap) Len() int {
 	return len(h)
 }
@@ -59,4 +67,12 @@ func (h *AsksHeap) Push(x any) {
 	item := x.(*OrderItem)
 	*h = append(*h, item)
 	item.index = len(*h)
+}
+
+func (h AsksHeap) Peek() *OrderItem {
+	if len(h) == 0 {
+		return nil
+	}
+
+	return h[0]
 }

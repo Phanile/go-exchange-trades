@@ -1,10 +1,14 @@
 package kafka
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"github.com/Phanile/go-exchange-trades/internal/config"
+	"github.com/Phanile/go-exchange-trades/internal/core"
+	"github.com/Phanile/go-exchange-trades/internal/storage"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"log/slog"
-	"os"
 	"strconv"
 	"sync"
 )
@@ -12,6 +16,7 @@ import (
 type App struct {
 	log          *slog.Logger
 	consumer     *kafka.Consumer
+	producer     *kafka.Producer
 	topics       []string
 	port         int
 	workersCount int
@@ -26,9 +31,9 @@ func NewKafkaApp(log *slog.Logger, kafkaConfig *config.KafkaConfig) (*App, error
 	)
 
 	conf := kafka.ConfigMap{
-		"bootstrap.servers": os.Getenv("KAFKA_BOOTSTRAP_SERVERS"),
-		"group.id":          os.Getenv("KAFKA_GROUP_ID"),
-		"auto.offset.reset": "earliest",
+		"bootstrap.servers": kafkaConfig.BootstrapServers,
+		"group.id":          kafkaConfig.GroupID,
+		"auto.offset.reset": kafkaConfig.AutoOffsetReset,
 	}
 
 	consumer, errConsumer := kafka.NewConsumer(&conf)
@@ -43,14 +48,25 @@ func NewKafkaApp(log *slog.Logger, kafkaConfig *config.KafkaConfig) (*App, error
 		return nil, errSubscribe
 	}
 
+	producer, errProducer := kafka.NewProducer(&conf)
+
+	if errProducer != nil {
+		return nil, errProducer
+	}
+
 	return &App{
 		log:          log,
 		consumer:     consumer,
+		producer:     producer,
 		topics:       kafkaConfig.Topics,
 		port:         kafkaConfig.Port,
 		workersCount: kafkaConfig.WorkersCount,
 		stopCh:       make(chan struct{}),
 	}, nil
+}
+
+func (a *App) GetProducer() *kafka.Producer {
+	return a.producer
 }
 
 func (a *App) Run(handler func(msg *kafka.Message) error) {
@@ -100,4 +116,31 @@ func (a *App) Stop() {
 	a.log.Info("kafka app is shutting down")
 	close(a.stopCh)
 	_ = a.consumer.Close()
+	a.producer.Close()
+}
+
+func NewKafkaHandler(log *slog.Logger, store *storage.Storage) func(msg *kafka.Message) error {
+	return func(msg *kafka.Message) error {
+		var trade core.TradeMessage
+
+		err := json.Unmarshal(msg.Value, &trade)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal trade message: %w", err)
+		}
+
+		_, err = store.SaveTrade(
+			context.Background(),
+			trade.BuyOrderId,
+			trade.SellOrderId,
+			trade.Amount,
+			trade.Price,
+			trade.Timestamp,
+		)
+		if err != nil {
+			return fmt.Errorf("failed to save trade: %w", err)
+		}
+
+		log.Info("trade saved", "trade", trade)
+		return nil
+	}
 }

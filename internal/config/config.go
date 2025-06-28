@@ -19,10 +19,12 @@ type GRPCConfig struct {
 }
 
 type KafkaConfig struct {
-	Port         int           `yaml:"port"`
-	Timeout      time.Duration `yaml:"timeout"`
-	Topics       []string      `yaml:"topics"`
-	WorkersCount int           `yaml:"workers_count"`
+	Port             int      `yaml:"port"`
+	Topics           []string `yaml:"topics"`
+	WorkersCount     int      `yaml:"workers_count"`
+	BootstrapServers string   `yaml:"bootstrap_servers"`
+	GroupID          string   `yaml:"group_id"`
+	AutoOffsetReset  string   `yaml:"auto_offset_reset"`
 }
 
 func MustLoad() *Config {
