@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/Phanile/go-exchange-trades/internal/app"
-	"github.com/Phanile/go-exchange-trades/internal/app/kafka"
 	"github.com/Phanile/go-exchange-trades/internal/config"
 	"github.com/joho/godotenv"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -24,10 +23,9 @@ func main() {
 	log := setupLogger(envLocal)
 	setupEnv(envLocal)
 
-	application := app.NewApp(log, cfg.Kafka, cfg.GRPC)
+	application := app.NewApp(log, cfg.GRPC)
 
 	go application.GRPCApp.MustRun()
-	go application.KafkaApp.Run(kafka.NewKafkaHandler(log, application.Storage))
 	go handleMetrics()
 
 	stop := make(chan os.Signal, 1)
@@ -36,7 +34,6 @@ func main() {
 	<-stop
 
 	application.GRPCApp.Stop()
-	application.KafkaApp.Stop()
 }
 
 func setupLogger(env string) *slog.Logger {

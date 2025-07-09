@@ -3,24 +3,23 @@ package app
 import (
 	"database/sql"
 	"github.com/Phanile/go-exchange-trades/internal/app/grpc"
-	"github.com/Phanile/go-exchange-trades/internal/app/kafka"
 	"github.com/Phanile/go-exchange-trades/internal/config"
 	"github.com/Phanile/go-exchange-trades/internal/core"
 	"github.com/Phanile/go-exchange-trades/internal/middleware"
 	"github.com/Phanile/go-exchange-trades/internal/services/trades"
 	"github.com/Phanile/go-exchange-trades/internal/storage"
+	_ "github.com/lib/pq"
 	"github.com/pressly/goose/v3"
 	"log/slog"
 	"os"
 )
 
 type App struct {
-	GRPCApp  *grpc.App
-	KafkaApp *kafka.App
-	Storage  *storage.Storage
+	GRPCApp *grpc.App
+	Storage *storage.Storage
 }
 
-func NewApp(log *slog.Logger, kafkaConfig *config.KafkaConfig, gRPCConfig *config.GRPCConfig) *App {
+func NewApp(log *slog.Logger, gRPCConfig *config.GRPCConfig) *App {
 	postgres, errPostgres := storage.NewPostgresStorage(os.Getenv("PGSQL_CONNECTION_STRING"))
 
 	if errPostgres != nil {
@@ -31,24 +30,15 @@ func NewApp(log *slog.Logger, kafkaConfig *config.KafkaConfig, gRPCConfig *confi
 
 	jwtMiddleware := middleware.NewJWTMiddleware(os.Getenv("JWT_PUBLIC_KEY"))
 
-	kafkaApp, errKafka := kafka.NewKafkaApp(log, kafkaConfig)
+	ob := core.NewOrderBook()
 
-	if errKafka != nil {
-		panic(errKafka)
-	}
-
-	producer := kafkaApp.GetProducer()
-
-	ob := core.NewOrderBook(producer, kafkaConfig)
-
-	tradesService := trades.NewTradesService(log, ob, ob, ob, producer)
+	tradesService := trades.NewTradesService(log, ob, ob, ob)
 
 	gRPCApp := grpc.NewGRPCApp(log, gRPCConfig, tradesService, jwtMiddleware)
 
 	return &App{
-		GRPCApp:  gRPCApp,
-		KafkaApp: kafkaApp,
-		Storage:  postgres,
+		GRPCApp: gRPCApp,
+		Storage: postgres,
 	}
 }
 

@@ -6,7 +6,6 @@ import (
 	tradev1 "github.com/Phanile/go-exchange-protos/generated/go/trades"
 	"github.com/Phanile/go-exchange-trades/internal/core"
 	"github.com/Phanile/go-exchange-trades/internal/domain/models"
-	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"log/slog"
 	"strconv"
 	"time"
@@ -17,16 +16,14 @@ type Trades struct {
 	orderProvider     OrderProvider
 	tradeProvider     TradeProvider
 	orderBookProvider OrderBookProvider
-	producer          *kafka.Producer
 }
 
-func NewTradesService(log *slog.Logger, orderProvider OrderProvider, tradeProvider TradeProvider, orderBookProvider OrderBookProvider, producer *kafka.Producer) *Trades {
+func NewTradesService(log *slog.Logger, orderProvider OrderProvider, tradeProvider TradeProvider, orderBookProvider OrderBookProvider) *Trades {
 	return &Trades{
 		log:               log,
 		orderProvider:     orderProvider,
 		tradeProvider:     tradeProvider,
 		orderBookProvider: orderBookProvider,
-		producer:          producer,
 	}
 }
 

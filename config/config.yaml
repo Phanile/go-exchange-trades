@@ -2,12 +2,3 @@ env: "local"
 grpc:
   port: 5711
   timeout: 10s
-kafka:
-  port: 9092
-  auto_offset_reset: "earliest"
-  bootstrap_servers: "kafka:29092"
-  group_id: "trades-group"
-  topics:
-    - orders
-    - trades
-  workers_count: 3

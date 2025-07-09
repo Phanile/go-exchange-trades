@@ -3,11 +3,7 @@ package core
 import (
 	"container/heap"
 	"context"
-	"encoding/json"
-	"fmt"
-	"github.com/Phanile/go-exchange-trades/internal/config"
 	"github.com/Phanile/go-exchange-trades/internal/domain/models"
-	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"sync/atomic"
 	"time"
 )
@@ -17,17 +13,12 @@ var globalOrderId atomic.Int64
 type OrderBook struct {
 	Asks AsksHeap
 	Bids BidsHeap
-
-	producer    *kafka.Producer
-	kafkaConfig *config.KafkaConfig
 }
 
-func NewOrderBook(producer *kafka.Producer, kafkaConfig *config.KafkaConfig) *OrderBook {
+func NewOrderBook() *OrderBook {
 	return &OrderBook{
-		Asks:        make(AsksHeap, 0),
-		Bids:        make(BidsHeap, 0),
-		producer:    producer,
-		kafkaConfig: kafkaConfig,
+		Asks: make(AsksHeap, 0),
+		Bids: make(BidsHeap, 0),
 	}
 }
 
@@ -54,32 +45,6 @@ func (ob *OrderBook) GetOrderBook() ([]*models.OrderBookEntry, []*models.OrderBo
 
 func (ob *OrderBook) SaveTrade(ctx context.Context, buyOrderId, sellOrderId, amount, price, timestamp int64) (int64, error) {
 	const op = "OrderBook.SaveTrade"
-
-	tradeMessage := &TradeMessage{
-		BuyOrderId:  buyOrderId,
-		SellOrderId: sellOrderId,
-		Amount:      amount,
-		Price:       price,
-		Timestamp:   timestamp,
-	}
-
-	data, err := json.Marshal(tradeMessage)
-
-	if err != nil {
-		return 0, fmt.Errorf("%s: %w", op, err)
-	}
-
-	errProduce := ob.producer.Produce(&kafka.Message{
-		TopicPartition: kafka.TopicPartition{
-			Topic:     &ob.kafkaConfig.Topics[1], // "trades"
-			Partition: kafka.PartitionAny,
-		},
-		Value: data,
-	}, nil)
-
-	if errProduce != nil {
-		return 0, fmt.Errorf("%s: %w", op, errProduce)
-	}
 
 	return 1, nil
 }

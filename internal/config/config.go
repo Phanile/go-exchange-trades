@@ -8,23 +8,13 @@ import (
 )
 
 type Config struct {
-	Env   string       `yaml:"env"`
-	GRPC  *GRPCConfig  `yaml:"grpc"`
-	Kafka *KafkaConfig `yaml:"kafka"`
+	Env  string      `yaml:"env"`
+	GRPC *GRPCConfig `yaml:"grpc"`
 }
 
 type GRPCConfig struct {
 	Port    int           `yaml:"port"`
 	Timeout time.Duration `yaml:"timeout"`
-}
-
-type KafkaConfig struct {
-	Port             int      `yaml:"port"`
-	Topics           []string `yaml:"topics"`
-	WorkersCount     int      `yaml:"workers_count"`
-	BootstrapServers string   `yaml:"bootstrap_servers"`
-	GroupID          string   `yaml:"group_id"`
-	AutoOffsetReset  string   `yaml:"auto_offset_reset"`
 }
 
 func MustLoad() *Config {
